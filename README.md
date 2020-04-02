@@ -11,13 +11,8 @@ This document details the structure and workings of the this Test Automation Fra
 1. Open up a new shell and run the following in the repository root
 
 ```bash
-# macOS: install application node version
-$ nvm install
-
-# Windows: install application node version
-# .nvmrc is not supported on Windows, instead open the '.nvmrc' file and get the Node.js version from it
-$ nvm install <version-without-v-prefix>
-$ nvm use <version-without-v-prefix>
+$ nvm install node
+$ nvm use node
 
 # Install yarn globally
 $ npm i yarn -g
