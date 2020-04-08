@@ -312,7 +312,7 @@ function formatError(error) {
         screenshotPath = error.split('Screenshot:')[1].split('<br>')[0];
         screenshotPath = screenshotPath.includes(symbols.slashChar)
             ? screenshotPath.split(`testcafe${symbols.slashChar}`)[1]
-            : screenshotPath.split(`testcafe/`)[1];
+            : screenshotPath.split(`reports/`)[1];
     }
 
     const screeshotHtml = screenshotPath
