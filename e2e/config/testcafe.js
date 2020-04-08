@@ -1,5 +1,5 @@
 require('ts-node').register({
-    project: 'tsconfig.json'
+    project: 'tsconfig.json',
 });
 
 const commandLineArgs = require('command-line-args');
@@ -14,7 +14,7 @@ const browserList = ['chrome', 'ie', 'internet explorer', 'edge', 'firefox', 'op
 const reportBaseDir = 'reports';
 const smoke = processArgs.includes('smoke');
 const e2e = processArgs.includes('e2e');
-const testDir = 'e2e/tests'
+const testDir = 'e2e/tests';
 const smokeTestDir = path.join(testDir, 'smoke');
 const e2eTestDir = path.join(testDir, 'regression');
 const clientScriptDirectory = path.join('e2e', 'clientScripts');
@@ -42,7 +42,7 @@ const options = commandLineArgs([
     { name: 'screenshot', type: Boolean, defaultValue: false },
     { name: 'suppressConsoleColors', type: Boolean, defaultValue: false },
     { name: 'quarantineMode', alias: 'q', type: Boolean, defaultValue: false },
-    { name: 'qrCode', type: Boolean }
+    { name: 'qrCode', type: Boolean },
 ]);
 
 exitCode = runTests();
@@ -71,7 +71,6 @@ function runTests() {
     createReport !== 0
         ? logError('Merge Testcafe Report JSON and Test JSON was Unsuccessful')
         : logInfo('Merge Testcafe Report JSON and Test JSON was Successful');
-
 
     // visual testing code
     // execCommand(

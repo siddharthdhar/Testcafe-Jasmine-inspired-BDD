@@ -4,7 +4,7 @@
     if (!console) return;
     function intercept(method) {
         var original = console[method];
-        console[method] = function() {
+        console[method] = function () {
             var message = Array.prototype.slice.apply(arguments).join(' ');
 
             //==========================================================

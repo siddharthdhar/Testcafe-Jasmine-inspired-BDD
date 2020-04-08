@@ -1,9 +1,9 @@
-window.addEventListener('error', function(event) {
+window.addEventListener('error', function (event) {
     console.error(JSON.stringify(event.error));
     console.error(event.message);
 });
 
-window.onerror = function(msg, url, lineNo, columnNo, error) {
+window.onerror = function (msg, url, lineNo, columnNo, error) {
     var string = msg.toLowerCase();
     var substring = 'script error';
     if (string.indexOf(substring) > -1) {
@@ -14,7 +14,7 @@ window.onerror = function(msg, url, lineNo, columnNo, error) {
             'URL: ' + url,
             'Line: ' + lineNo,
             'Column: ' + columnNo,
-            'Error object: ' + JSON.stringify(error)
+            'Error object: ' + JSON.stringify(error),
         ].join(' - ');
 
         console.log(message);

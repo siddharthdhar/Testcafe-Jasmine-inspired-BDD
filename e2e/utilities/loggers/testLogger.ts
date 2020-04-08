@@ -10,7 +10,7 @@ export function consoleColor(colorName: 'red' | 'green' | 'yellow' | 'cyan' | 'd
         green: '\x1b[32m',
         yellow: '\x1b[33m',
         cyan: '\x1b[36m',
-        default: '\x1b[0m'
+        default: '\x1b[0m',
     };
     return process.env.suppressConsoleColors === 'true' ? '' : color[colorName];
 }
@@ -20,7 +20,7 @@ const testPhases = {
     inFixtureAfterEachHook: 'inFixtureAfterEachHook',
     inTestBeforeHook: 'inTestBeforeHook',
     inFixtureBeforeEachHook: 'inFixtureBeforeEachHook',
-    inTest: 'inTest'
+    inTest: 'inTest',
 };
 
 /**
@@ -57,7 +57,7 @@ export function apiRequestLogger(): RequestLogger {
         logRequestHeaders: true,
         logResponseHeaders: true,
         logResponseBody: true,
-        stringifyResponseBody: true
+        stringifyResponseBody: true,
     });
     return logger;
 }
@@ -75,12 +75,12 @@ function pushRequestLoggerToTestLog(httpRequestLogger: RequestLogger) {
             const request = {
                 method: element.request.method,
                 timestamp: new Date(element.request.timestamp).toISOString(),
-                url: element.request.url
+                url: element.request.url,
             };
             const response = {
                 timestamp: new Date(element.response.timestamp).toISOString(),
                 statusCode: element.response.statusCode,
-                body: element.response.body
+                body: element.response.body,
             };
             const messageWithTimeStamp = `${request.timestamp} |${tabIndent(formatIndent)}${consoleColor(
                 'yellow'
@@ -110,7 +110,7 @@ export async function testLogger(tc: TestController, httpRequestLogger: RequestL
         inFixtureAfterEachHook: (): string => '::TEST::FIXTURE AFTER EACH HOOK::',
         inTestBeforeHook: (): string => '::TEST::BEFORE HOOK::',
         inFixtureBeforeEachHook: (): string => '::TEST::FIXTURE BEFORE EACH HOOK::',
-        inTest: (): string => '::TEST HOOK::'
+        inTest: (): string => '::TEST HOOK::',
     };
     await pushToTestLog(logMessage(phaseMap[testPhase]()));
     return fn()
@@ -232,7 +232,7 @@ function prepareLogTopItems(
         ],
         tags: JSON.stringify(JSON.parse(testDetails).testRun.test.testFile.currentFixture.meta),
         fixtureName: JSON.parse(testDetails).testRun.test.testFile.currentFixture.name,
-        testDescription: JSON.parse(testDetails).testRun.test.name
+        testDescription: JSON.parse(testDetails).testRun.test.name,
     };
 }
 
@@ -271,7 +271,7 @@ async function flushTestLogToConsole(testdetails: string, httpRequestLogger: Req
         quarantineAttempt: topLogItems.quarantineAttempt,
         fixtureName: topLogItems.fixtureName,
         testName: topLogItems.testDescription,
-        testLog: testController.ctx.logs
+        testLog: testController.ctx.logs,
     };
 
     flushTestLogToJsonFile(testLogObject);
@@ -290,7 +290,6 @@ async function flushTestLogToConsole(testdetails: string, httpRequestLogger: Req
     // Step 6: Finally print the array without the timestamps
     return Promise.resolve(testController.ctx.logs.forEach((element: string) => console.log(element)));
 }
-
 
 /**
  * Push the message to test log
@@ -335,7 +334,7 @@ const getCircularReplacer = () => {
 
 async function flushTestLogToJsonFile(testLogObject: TestcafeTestLog) {
     let fileDataObject = {
-        logs: []
+        logs: [],
     };
     let fileCreated = false;
     const logFile = process.env.testLogPath;
@@ -379,4 +378,3 @@ async function flushTestLogToJsonFile(testLogObject: TestcafeTestLog) {
     };
     readAndWriteToFile();
 }
-

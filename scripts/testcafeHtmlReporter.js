@@ -130,13 +130,13 @@ tbody.legendTable td {
 const status = {
     passed: 'Passed',
     skipped: 'Skipped',
-    failed: 'Failed'
+    failed: 'Failed',
 };
 
 const statusColors = {
     passed: '#2cc16a',
     skipped: '#e6a602',
-    failed: '#e65202'
+    failed: '#e65202',
 };
 
 const symbols = {
@@ -147,7 +147,7 @@ const symbols = {
     testInfo: '&#128712;',
     greenTick: '&#9989;',
     redCross: '&#10060;',
-    slashChar: '&#92;'
+    slashChar: '&#92;',
 };
 
 function flushFixtures(fixtures) {

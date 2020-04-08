@@ -5,7 +5,7 @@ const browserLogWhitelist = {
     containsMatchingWarning: (logMessage) => {
         const warnings: string[] = [
             // Only add messages to the whitelist that can safely be ignored. For example errors due to erroneous mock server responses should be fixed in mock server
-            'You have a local storage override of the feature flag key'
+            'You have a local storage override of the feature flag key',
         ];
 
         return warnings.some((logToIgnore: string) => logMessage.indexOf(logToIgnore) !== -1);
@@ -16,7 +16,7 @@ const browserLogWhitelist = {
         ];
 
         return errors.some((logToIgnore: string) => logMessage.indexOf(logToIgnore) !== -1);
-    }
+    },
 };
 
 /**
