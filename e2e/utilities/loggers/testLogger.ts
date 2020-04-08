@@ -1,6 +1,8 @@
 // All Timestamps pushed to log should be in the format (including the pipe | symbol): "YYYY-MM-DDTHH:MM:SS.sssZ |"
 import { t as testController, RequestLogger } from 'testcafe';
 import * as browserLogs from './browserLogger';
+import * as fs from 'fs';
+import { TestcafeTestLog } from '../../models/testcafeLog';
 
 export function consoleColor(colorName: 'red' | 'green' | 'yellow' | 'cyan' | 'default') {
     const color = {
@@ -216,24 +218,22 @@ export function logFailureMessage(failMsg: string): string {
  * Adds Fixture Name and Test Description from the test cafe testcontroller to the TOP of test logger
  * @param testDetails Test Controller details from Test Cafe Test as a JSON string
  */
-function logFixtureAndTestDescription(testDetails: string) {
-    if (!testController.ctx.logs) {
-        testController.ctx.logs = [];
-    }
-    const fixtureMessage = `${timestamp()}[FIXTURE:] ${JSON.parse(testDetails).testRun.test.testFile.currentFixture.name}`;
-    const testDescriptionMessage = `${timestamp()}[Test:] ${JSON.parse(testDetails).testRun.test.name}`;
-    testController.ctx.logs.splice(
-        0,
-        0,
-        `\n\n\nLogs For Quarantine ATTEMPT: ${
-            JSON.parse(testDetails).testRun.browserManipulationQueue.screenshotCapturer.pathPattern.placeholderToDataMap[
-                '${QUARANTINE_ATTEMPT}'
-            ]
-        }`
-    );
-    testController.ctx.logs.splice(1, 0, `[TAGS]: ${JSON.stringify(JSON.parse(testDetails).testRun.test.testFile.currentFixture.meta)}`);
-    testController.ctx.logs.splice(2, 0, `${fixtureMessage}`);
-    testController.ctx.logs.splice(3, 0, testDescriptionMessage);
+function prepareLogTopItems(
+    testDetails: string
+): {
+    quarantineAttempt: string;
+    tags: string;
+    fixtureName: string;
+    testDescription: string;
+} {
+    return {
+        quarantineAttempt: JSON.parse(testDetails).testRun.browserManipulationQueue.screenshotCapturer.pathPattern.placeholderToDataMap[
+            '${QUARANTINE_ATTEMPT}'
+        ],
+        tags: JSON.stringify(JSON.parse(testDetails).testRun.test.testFile.currentFixture.meta),
+        fixtureName: JSON.parse(testDetails).testRun.test.testFile.currentFixture.name,
+        testDescription: JSON.parse(testDetails).testRun.test.name
+    };
 }
 
 /**
@@ -244,7 +244,11 @@ function logFixtureAndTestDescription(testDetails: string) {
  * @param testdetails JSON Object string
  * @param httpRequestLogger as Test Cafe Request Logger
  */
+
 async function flushTestLogToConsole(testdetails: string, httpRequestLogger: RequestLogger): Promise<void> {
+    if (!testController.ctx.logs) {
+        testController.ctx.logs = [];
+    }
     // Step 1: Fetch all the browser logs collected for the lifetime of the test
     await browserLogs.pushBrowserLogToTestLog();
 
@@ -254,17 +258,39 @@ async function flushTestLogToConsole(testdetails: string, httpRequestLogger: Req
     // Step 3: Sort the logs based on timestamp.
     // **DISCLAIMER** If timestamp wasn't passed as a part of log message, sorting will be incorrect
     testController.ctx.logs = testController.ctx.logs.sort();
-
-    // Step 4: Add the Fixture and Test Description to the top of the Array, to identify the test more accurately and easily
-    logFixtureAndTestDescription(testdetails);
-
-    // Step 5: Finally print the array without the timestamps
-    return Promise.resolve(
-        testController.ctx.logs.forEach((element: string) => {
-            console.log(element.includes('|') ? element.split('|')[1] : element);
+    await Promise.resolve(
+        testController.ctx.logs.forEach((element: string, index: number) => {
+            testController.ctx.logs[index] = element.includes('|') ? element.split('|')[1] : element;
         })
     );
+
+    // Step 4: Prepare to release TestLog Object to a log.json file
+    const topLogItems = prepareLogTopItems(testdetails);
+    const testLogObject: TestcafeTestLog = {
+        tags: topLogItems.tags,
+        quarantineAttempt: topLogItems.quarantineAttempt,
+        fixtureName: topLogItems.fixtureName,
+        testName: topLogItems.testDescription,
+        testLog: testController.ctx.logs
+    };
+
+    flushTestLogToJsonFile(testLogObject);
+
+    // Step 5: Add the Fixture and Test Description to the top of the Array, to identify the test more accurately and easily
+    testController.ctx.logs.splice(0, 0, `\n\n\nLogs For Quarantine ATTEMPT: ${topLogItems.quarantineAttempt}`);
+    testController.ctx.logs.splice(1, 0, `[TAGS]: ${topLogItems.tags}`);
+    testController.ctx.logs.splice(2, 0, `[FIXTURE]: ${topLogItems.fixtureName}`);
+    testController.ctx.logs.splice(3, 0, `[TEST]: ${topLogItems.testDescription}`);
+    testController.ctx.logs.splice(
+        testController.ctx.logs.length + 1,
+        0,
+        `\n********************************** LOG FINISH **********************************\n\n`
+    );
+
+    // Step 6: Finally print the array without the timestamps
+    return Promise.resolve(testController.ctx.logs.forEach((element: string) => console.log(element)));
 }
+
 
 /**
  * Push the message to test log
@@ -306,3 +332,51 @@ const getCircularReplacer = () => {
         return value;
     };
 };
+
+async function flushTestLogToJsonFile(testLogObject: TestcafeTestLog) {
+    let fileDataObject = {
+        logs: []
+    };
+    let fileCreated = false;
+    const logFile = process.env.testLogPath;
+
+    const readAndWriteToFile = () => {
+        fs.readFile(logFile, 'utf-8', (readErr, fileData) => {
+            if (readErr) {
+                if (readErr.code === 'ENOENT') {
+                    if (!fileCreated) {
+                        fs.writeFile(logFile, JSON.stringify(fileDataObject), (writeErr) => {
+                            if (writeErr) {
+                                throw writeErr;
+                            }
+                            fileCreated = true;
+                            readAndWriteToFile();
+                        });
+                    } else {
+                        readAndWriteToFile();
+                    }
+                } else {
+                    console.log('other kind of error', readErr);
+                    throw readErr;
+                }
+            } else if (!fileData) {
+                readAndWriteToFile();
+            } else {
+                fileDataObject = JSON.parse(fileData);
+                fileDataObject.logs.push(testLogObject);
+                fs.writeFile(
+                    logFile,
+                    JSON.stringify(fileDataObject, null, 2).replace(/\\t|\\n|\\u001b\[(.*?)m/g, ''),
+                    'utf-8',
+                    (writeErr) => {
+                        if (writeErr) {
+                            throw writeErr;
+                        }
+                    }
+                );
+            }
+        });
+    };
+    readAndWriteToFile();
+}
+

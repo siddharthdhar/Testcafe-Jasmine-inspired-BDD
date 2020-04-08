@@ -18,6 +18,8 @@ const testDir = 'e2e/tests'
 const smokeTestDir = path.join(testDir, 'smoke');
 const e2eTestDir = path.join(testDir, 'regression');
 const clientScriptDirectory = path.join('e2e', 'clientScripts');
+process.env.reportBaseDir = reportBaseDir;
+process.env.testLogPath = path.join(process.env.reportBaseDir, 'testcafeLog.json');
 
 // DEFAULT VALUES:
 let qrCodeCommand = '';
@@ -51,11 +53,25 @@ function runTests() {
     logAndExecute('Set Sauce Username and Key as environment variables', setSauceVariables());
     logAndExecute('Set Percy Token as environment variables', setPercyVariables());
     resolveBrowser();
-    execCommand(
+
+    // 1. Run Testcafe Tests
+    logInfo('Running Testcafe Tests:');
+    const testRun = execCommand(
         `yarn testcafe -c ${
             options.concurrency
         } ${remote} "${browser}" ${testDirectory()} ${qrCodeCommand} ${takeScreenshotOnFail()} ${resolveFixtureMetaData()} ${resolveTestMetaData()} ${runInQuarantineMode()} ${loadClientScripts()} --skip-js-errors -r spec,nunit:${nunitReportPath},json:${jsonReportPath} `
     );
+    console.log('\n');
+    testRun === 0 ? logInfo(`Test Run Completed with exit code ${testRun}`) : logWarn(`Test Run Completed with exit code ${testRun}`);
+
+    // 2. Create Custom Test Report
+    console.log('\n');
+    logInfo('Merge Testcafe Report JSON and Test JSON...');
+    const createReport = execCommand('node scripts/testcafeMergeLogAndReport.js');
+    createReport !== 0
+        ? logError('Merge Testcafe Report JSON and Test JSON was Unsuccessful')
+        : logInfo('Merge Testcafe Report JSON and Test JSON was Successful');
+
 
     // visual testing code
     // execCommand(
