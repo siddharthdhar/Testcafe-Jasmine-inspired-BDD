@@ -184,4 +184,5 @@ $ yarn smoke --quarantineMode
 $ yarn smoke -q
 example: yarn smoke -q
 ```
-"# testcafe.poc" 
+
+"# testcafe.poc"
