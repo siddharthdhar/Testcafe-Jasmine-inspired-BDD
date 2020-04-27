@@ -11,10 +11,10 @@ module.exports = function htmlContent(reportObject) {
                 <thead>
                     <tr>
                         <th>User Agent</th>
-                        <th>Total</th>
-                        <th>Passed</th>
-                        <th>Failed</th>
-                        <th>Skipped</th>
+                        <th><button class="filterBtn" id="total">Total</button></th>
+                        <th><button class="filterBtn" id="passed">Passed</button></th>
+                        <th><button class="filterBtn" id="failed">Failed</button></th>
+                        <th><button class="filterBtn" id="skipped">Skipped</button></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -27,8 +27,7 @@ module.exports = function htmlContent(reportObject) {
                     </tr>
                 </tbody>
             </table>
-            <table>
-                <tbody class="legendTable">
+            <table class="legendTable">
                     <tr>
                         <td>Fixtures: ${symbols.fixtures}</td>
                         <td>Tests: ${symbols.tests}</td>
@@ -36,9 +35,119 @@ module.exports = function htmlContent(reportObject) {
                         <td>Http Requests: ${symbols.httpRequests}</td>
                         <td>Test Info: ${symbols.testInfo}</td>
                     </tr>
-                </tbody>
             </table>
+
+            ${expandAndCollapseButtons}
+
             ${flushFixtures(reportObject.fixtures)}
+
+            ${expandAndCollapseButtons}
+
+            <script type="text/javascript">
+
+            var acc = document.getElementsByClassName("accordian");
+            var failed = document.getElementsByName("fixture-Failed");
+            var expandAll = document.getElementsByName("expand");
+            var collapseAll = document.getElementsByName("collapse");
+            var failedFixtures = document.getElementsByName("expand-fixtures-Failed");
+            var filterFail = document.getElementById("failed")
+            var filterPassed = document.getElementById("passed")
+            var filterSkipped = document.getElementById("skipped")
+            var filterTotal = document.getElementById("total");
+
+            // Click on Individual accordian to expand and collapse
+            for (var i = 0; i < acc.length; i++) {
+                acc[i].addEventListener("click", function () {
+                    this.classList.toggle("active");
+                    var panel = this.nextElementSibling;
+                    var testRow = this.nextElementSibling.nextElementSibling;
+                    if (panel.style.display === "block") {
+                        panel.style.display = "none";
+                        testRow.style.display = "none";
+                    } else {
+                        panel.style.display = "block";
+                        testRow.style.display = "block";
+                    }
+                });
+            }
+
+            // Click on Expand All Buttons to expand all the accordians
+            for (var i = 0; i < expandAll.length; i++) {
+                expandAll[i].addEventListener("click", function () {
+                    for (var j = 0; j < acc.length; j++) {
+                        acc[j].nextElementSibling.style.display = "block";
+                        acc[j].nextElementSibling.nextElementSibling.style.display = "block";
+                    }
+                });
+            }
+
+            // Click on Collapse All Buttons to collapse all the accordians
+            for (var i = 0; i < collapseAll.length; i++) {
+                collapseAll[i].addEventListener("click", function () {
+                    for (var j = 0; j < acc.length; j++) {
+                        acc[j].nextElementSibling.style.display = "none";
+                        acc[j].nextElementSibling.nextElementSibling.style.display = "none";
+                    }
+                });
+            }
+
+            // Click on Expand Failed Fixturesbutton to expand only the failed fixtures
+            for (var i = 0; i < failedFixtures.length; i++) {
+                failedFixtures[i].addEventListener("click", function () {
+                    for (var j = 0; j < acc.length; j++) {
+                        failed[j].nextElementSibling.style.display = "block";
+                        failed[j].nextElementSibling.nextElementSibling.style.display = "block";
+                    }
+                });
+            }
+
+            // Show only Failed Fixtures and Hide the rest
+            filterFail.addEventListener("click", function () {
+                for (var i = 0; i < acc.length; i++) {
+                    if(acc[i].getAttribute("name") !== "fixture-Failed") {
+                        if(acc[i].style.display !== "none") {
+                            acc[i].style.display = "none";
+                        } else {
+                            acc[i].style.display = "block";
+                        }
+                    }
+                }
+            });
+
+            // Show only Passed Fixtures and Hide the rest
+            filterPassed.addEventListener("click", function() {
+                for(var i = 0; i < acc.length; i++) {
+                    if(acc[i].getAttribute("name") !== "fixture-Passed") {
+                        if(acc[i].style.display !== "none" ) {
+                            acc[i].style.display = "none";
+                        } else {
+                            acc[i].style.display = "block";
+                        }
+                    }
+                }
+            });
+
+            // Show only Skipped Fixtures and Hide the rest
+            filterSkipped.addEventListener("click", function() {
+                for(var i = 0; i < acc.length; i++) {
+                    if(acc[i].getAttribute("name") !=="fixture-Skipped" ) {
+                        if(acc[i].style.display !=="none" ) {
+                            acc[i].style.display="none" ;
+                        } else {
+                            acc[i].style.display="block" ;
+                        }
+                    }
+                }
+            });
+
+            // Clear all Filters
+            filterTotal.addEventListener("click", function() {
+                for(var i = 0; i < acc.length; i++) {
+                    acc[i].style.display="block" ;
+                }
+            });
+
+            </script>
         </body>
     </html>
     `;
@@ -46,9 +155,14 @@ module.exports = function htmlContent(reportObject) {
 
 const cssStyle = `
 table {
-	width: 750px;
+    width: 80%;
+    border-collapse: collapse;
+}
+
+table.reportSummary, table.legendTable {
+    width: 50%;
 	border-collapse: collapse;
-	margin:50px auto;
+    margin: 25px auto;
 	}
 
 th {
@@ -64,26 +178,62 @@ td, th {
 	font-size: 18px;
     }
 
-tbody.legendTable td {
+table.legendTable td {
     border: 0;
+}
+
+.accordian {
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+	text-align: center;
+    border: 1px solid white;
+    transition: 0.4s;
+	font-size: 18px;
+    font-weight: bold;
+}
+
+.toggle-all {
+    cursor: pointer;
+    padding: 18px;
+    width: 200px;
+    text-align: center;
+    border: 1px solid black;
+    transition: 0.4s;
+    font-size: 12px;
+    font-weight: bold;
+    margin: 20px 0px 20px;
+    padding: 10px 0px 10px;
+}
+
+.filterBtn {
+    cursor: pointer;
+    padding: 10px;
+    border: none;
+    text-align: center;
+    text-decoration: underline;
+    font-size: 18px;
+    background: #3498db;
+    color: white;
+	font-weight: bold;
+}
+
+.panel {
+    padding: 10px 0px 10px;
+    width: 80%;
+    margin: 15px auto;
+    display: none;
+}
+
+table.tests {
+    display: none;
 }
 
 .reportSummary tr td, th {
     padding: 10px;
-	border: 1px solid #ccc;
-	text-align: center;
-	font-size: 18px;
-}
-
-.fixtures tr td {
+    border: 1px solid #ccc;
     text-align: center;
-    border: 5px solid black;
-	font-weight: bold;
-	color: #fff;
-}
-
-.fixtures tr td label {
-	display: block;
+    font-size: 18px;
 }
 
 .logItem {
@@ -121,11 +271,13 @@ tbody.legendTable td {
     text-align: center;
     color: #1d0ff3;
     font-weight: bold
-}
-
-[data-toggle="toggle"] {
-	display: none;
 }`;
+
+const expandAndCollapseButtons = `
+    <button class="toggle-all" name="expand">EXPAND ALL</button>
+    <button class="toggle-all" name="collapse">COLLAPSE ALL</button>
+    <button class="toggle-all" name="expand-fixtures-Failed">EXPAND FAILED FIXTURES</button>
+`;
 
 const status = {
     passed: 'Passed',
@@ -154,32 +306,27 @@ function flushFixtures(fixtures) {
     const rows = [];
     fixtures.forEach((fixture, index) => {
         let fixtureBgColor = statusColors.passed;
+        let nameTag = `fixture-${status.passed}`;
         fixture.tests.find((test) => {
             if (test.skipped) {
                 fixtureBgColor = statusColors.skipped;
+                nameTag = `fixture-${status.skipped}`;
                 return true;
             } else if (test.errs.length > 0) {
                 fixtureBgColor = statusColors.failed;
+                nameTag = `fixture-${status.failed}`;
                 return true;
             }
         });
-        const elementIdentifier = `fixture${index + 1}`;
+        // const elementIdentifier = `fixture${index + 1}`;
         const tableData = `
-        <table>
-            <tbody class="fixtures">
-                <tr>
-                    <td style="background-color:${fixtureBgColor};color:white;" colspan="10">
-                        <label for="${elementIdentifier}">${symbols.fixtures} FIXTURE: ${fixture.name}</label>
-                        <input type="checkbox" name="${elementIdentifier}" id="${elementIdentifier}" data-toggle="toggle">
-                    </td>
-                </tr>
-            </tbody>
-            <tbody>
-            <td colspan="5" style="text-align: center;font-weight: bold;color: #100f0f;">
-                &#128736; TEST RESULT FOR &#128736;
-            </td>
+            <button class = "accordian" name="${nameTag}" style = "background-color:${fixtureBgColor};color:white;">${
+            symbols.fixtures
+        } FIXTURE: ${fixture.name}</button>
+            <div class="panel" style="text-align: center;font-weight: bold;color: #100f0f;">
+            &#128736; TEST RESULT FOR &#128736;</div>
+            <table class="tests">
             ${flushTests(fixture.tests)}
-            </tbody>
         </table>
         `;
         return rows.push(tableData);
@@ -216,6 +363,7 @@ function flushTests(tests) {
 }
 
 function mapErrorsToLog(log, test) {
+    const logHead = (message) => `<tr><td class = "logHead" colspan="5">${message}</td></tr>`;
     const beforeTestIndex = log.findIndex((element) => {
         return element.includes('::TEST::BEFORE HOOK::') || element.includes('::TEST::FIXTURE BEFORE EACH HOOK::');
     });
@@ -239,26 +387,26 @@ function mapErrorsToLog(log, test) {
         }
     });
 
-    rows.push(`<tr><td class = "logHead" colspan="5">TEST HOOK: BEFORE TEST</td></tr>`);
+    rows.push(logHead('TEST HOOK: BEFORE TEST'));
     beforeTestIndex !== -1
         ? log.slice(beforeTestIndex + 1, testIndex).forEach((lineItem) => rows.push(formatTestLog(lineItem)))
-        : rows.push('<tr><td colspan="5">NO LOG FOUND</td></tr>');
+        : rows.push(logHead('NO LOG FOUND'));
     if (beforeHookErrs.length > 0) {
         beforeHookErrs.forEach((err) => rows.push(formatError(err)));
     }
 
-    rows.push(`<tr><td class = "logHead" colspan="5">TEST BODY</td></tr>`);
+    rows.push(logHead('TEST BODY'));
     testIndex !== -1
         ? log.slice(testIndex + 1, afterTestIndex).forEach((lineItem) => rows.push(formatTestLog(lineItem)))
-        : rows.push('<tr><td colspan="5">NO LOG FOUND</td></tr>');
+        : rows.push(logHead('NO LOG FOUND'));
     if (testHookErrs.length > 0) {
         testHookErrs.forEach((err) => rows.push(formatError(err)));
     }
 
-    rows.push(`<tr><td class = "logHead" colspan="5">TEST HOOK: AFTER TEST</td></tr>`);
+    rows.push(logHead('TEST HOOK: AFTER TEST'));
     afterTestIndex !== -1
         ? log.slice(afterTestIndex + 1, log.length - 1).forEach((lineItem) => rows.push(formatTestLog(lineItem)))
-        : rows.push('<tr><td colspan="5">NO LOG FOUND</td></tr>');
+        : rows.push(logHead('NO LOG FOUND'));
     if (afterHookErrs.length > 0) {
         afterHookErrs.forEach((err) => rows.push(formatError(err)));
     }
