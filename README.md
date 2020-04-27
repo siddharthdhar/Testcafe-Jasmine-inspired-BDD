@@ -94,9 +94,17 @@ $ yarn install
         );
 
         ```
-        
-     1. REPORTS: The framework outputs Spec, JSON and HTML Reports in the reports folder once tests are run.
+
+    1. REPORTS: The framework outputs Spec, JSON and HTML Reports in the reports folder once tests are run.
          * HTML Report: contains the Logs, Test Results and Screenshots. This is a custom reporter which is different from HTML reporter recommended by Test Cafe.
+         * Custom HTML report:
+            * ReportSummary:
+
+            ![Report Summary](https://i.imgur.com/Wqy8c68h.png)
+
+            * Detailed View:
+
+            ![Detailed Summary](https://i.imgur.com/PzNkfjBh.png)
 
 ## RUN TESTS
 
