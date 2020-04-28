@@ -63,14 +63,15 @@ export function apiRequestLogger(): RequestLogger {
 }
 
 /**
- * Push the api responses (captured throughout the lifecycle of the test) that did not result in status code 200 0r 302 to Test Log
+ * Push the api responses (captured throughout the lifecycle of the test) that did not result in whitelisted status codes to Test Log
  * @param httpRequestLogger as the testcafe Request Logger
  */
 function pushRequestLoggerToTestLog(httpRequestLogger: RequestLogger) {
+    const whitelistStatusCodes = [200, 204, 302, 304, 301, 307];
     const formatIndent = 2;
     httpRequestLogger.requests
         .filter((element) => element.response)
-        .filter((element) => ![200, 204, 302, 304, 301, 307].includes(element.response.statusCode))
+        .filter((element) => !whitelistStatusCodes.includes(element.response.statusCode))
         .forEach((element) => {
             const request = {
                 method: element.request.method,
