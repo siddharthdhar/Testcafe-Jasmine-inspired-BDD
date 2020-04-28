@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "smoke": "rimraf reports/ && node e2e/config/testcafe.js"
+    "e2e": "rimraf reports/ && node src/front.end/config/testcafe.js"
   },
   "devDependencies": {
     "command-line-args": "^5.1.1",

@@ -2,7 +2,7 @@
 import { t as testController, RequestLogger } from 'testcafe';
 import * as browserLogs from './browserLogger';
 import * as fs from 'fs';
-import { TestcafeTestLog } from '../../models/testcafeLog';
+import { TestcafeTestLog } from '../models/testcafeLog';
 
 export function consoleColor(colorName: 'red' | 'green' | 'yellow' | 'cyan' | 'default') {
     const color = {
@@ -63,14 +63,15 @@ export function apiRequestLogger(): RequestLogger {
 }
 
 /**
- * Push the api responses (captured throughout the lifecycle of the test) that did not result in status code 200 0r 302 to Test Log
+ * Push the api responses (captured throughout the lifecycle of the test) that did not result in whitelisted status codes to Test Log
  * @param httpRequestLogger as the testcafe Request Logger
  */
 function pushRequestLoggerToTestLog(httpRequestLogger: RequestLogger) {
+    const whitelistStatusCodes = [200, 204, 302, 304, 301, 307];
     const formatIndent = 2;
     httpRequestLogger.requests
         .filter((element) => element.response)
-        .filter((element) => ![200, 204, 302, 304, 301, 307].includes(element.response.statusCode))
+        .filter((element) => !whitelistStatusCodes.includes(element.response.statusCode))
         .forEach((element) => {
             const request = {
                 method: element.request.method,
@@ -97,7 +98,7 @@ function pushRequestLoggerToTestLog(httpRequestLogger: RequestLogger) {
  * @param httpRequestLogger Test Cafe HTTP Request Logger
  * @param fn
  * @example
- * testLogger(testControllerToJsonString(t), httpRequestLogger, () => {
+ * testLogger(testControllerToJsonString(t), httpRequestLogger, async () => {
  *      await testCode;
  * })
  */

@@ -4,7 +4,8 @@ function main() {
     const fs = require('fs');
     const path = require('path');
     const logFile = process.env.testLogPath;
-    const reportFile = path.join(process.env.reportBaseDir, 'testcafe.json');
+    const jsonReportFile = path.join(process.env.reportBaseDir, 'testcafe.json');
+    const htmlFileName = path.join('reports','testcafe.html')
     const htmlContent = require('./testcafeHtmlReporter');
     // const logFile = 'reports/testcafe/testcafeLog.json';
     // const reportFile = 'reports/testcafe/testcafe.json';
@@ -14,7 +15,7 @@ function main() {
             throw readErr;
         }
         let logData = JSON.parse(logFileData).logs;
-        fs.readFile(reportFile, 'utf-8', (readErr, reportFileData) => {
+        fs.readFile(jsonReportFile, 'utf-8', (readErr, reportFileData) => {
             if (readErr) {
                 throw readErr;
             }
@@ -31,20 +32,22 @@ function main() {
                     });
                 });
             });
-            fs.writeFile('reports/testcafe.json', JSON.stringify(reportData, null, 2), 'utf-8', (writeErr) => {
+            fs.writeFile(jsonReportFile, JSON.stringify(reportData, null, 2), 'utf-8', (writeErr) => {
                 if (writeErr) {
                     console.log('Report JSON and Test JSON - Merge UNSUCCESSFUL');
                     throw writeErr;
                 } else {
-                    console.log('Report JSON and Test JSON - Merged SUCCESSFULLY');
+                    console.log('Report JSON and Test JSON - Merged SUCCESSFULLY.');
+                    console.log('JSON Report Located at - ', jsonReportFile);
                 }
             });
-            fs.writeFile('reports/testcafe.html', htmlContent(reportData), 'utf-8', (writeErr) => {
+            fs.writeFile(htmlFileName, htmlContent(reportData), 'utf-8', (writeErr) => {
                 if (writeErr) {
                     console.log('Report JSON and Test JSON - HTML creation UNSUCCESSFUL');
                     throw writeErr;
                 } else {
                     console.log('Report JSON and Test JSON - HTML creation SUCCESSFULL');
+                    console.log('HTML Report is located at: ', htmlFileName);
                 }
             });
         });
