@@ -3,21 +3,19 @@ require('ts-node').register({
 });
 
 const commandLineArgs = require('command-line-args');
-const execCommand = require('../../scripts/lib/executeCommand');
+const execCommand = require('../../../scripts/lib/executeCommand');
 const path = require('path');
-const log = require('../utilities/loggers/testLogger');
+const log = require('../testcafe/loggers/testLogger');
 // const allEnvironments = require('../e2e/environments').Environments.all;
 const processArgs = process.env.npm_config_argv;
-const mobile = require('../enums/enums').DeviceType.Mobile;
-const desktop = require('../enums/enums').DeviceType.Desktop;
+const mobile = require('../testcafe/enums/enums').DeviceType.Mobile;
+const desktop = require('../testcafe/enums/enums').DeviceType.Desktop;
 const browserList = ['chrome', 'ie', 'internet explorer', 'edge', 'firefox', 'opera', 'safari', 'chromium', 'chrome-canary'];
 const reportBaseDir = 'reports';
 const smoke = processArgs.includes('smoke');
 const e2e = processArgs.includes('e2e');
-const testDir = 'e2e/tests';
-const smokeTestDir = path.join(testDir, 'smoke');
-const e2eTestDir = path.join(testDir, 'regression');
-const clientScriptDirectory = path.join('e2e', 'clientScripts');
+const testDir = 'src/front.end/testcafe/tests';
+const clientScriptDirectory = path.join('src/front.end/testcafe', 'clientScripts');
 process.env.reportBaseDir = reportBaseDir;
 process.env.testLogPath = path.join(process.env.reportBaseDir, 'testcafeLog.json');
 
@@ -59,7 +57,7 @@ function runTests() {
     const testRun = execCommand(
         `yarn testcafe -c ${
             options.concurrency
-        } ${remote} "${browser}" ${testDirectory()} ${qrCodeCommand} ${takeScreenshotOnFail()} ${resolveFixtureMetaData()} ${resolveTestMetaData()} ${runInQuarantineMode()} ${loadClientScripts()} --skip-js-errors -r spec,nunit:${nunitReportPath},json:${jsonReportPath} `
+        } ${remote} "${browser}" ${testDir} ${qrCodeCommand} ${takeScreenshotOnFail()} ${resolveFixtureMetaData()} ${resolveTestMetaData()} ${runInQuarantineMode()} ${loadClientScripts()} --skip-js-errors -r spec,nunit:${nunitReportPath},json:${jsonReportPath} `
     );
     console.log('\n');
     testRun === 0 ? logInfo(`Test Run Completed with exit code ${testRun}`) : logWarn(`Test Run Completed with exit code ${testRun}`);
@@ -67,7 +65,7 @@ function runTests() {
     // 2. Create Custom Test Report
     console.log('\n');
     logInfo('Merge Testcafe Report JSON and Test JSON...');
-    const createReport = execCommand('node scripts/testcafeMergeLogAndReport.js');
+    const createReport = execCommand('node scripts/testcafe/testcafeMergeLogAndReport.js');
     createReport !== 0
         ? logError('Merge Testcafe Report JSON and Test JSON was Unsuccessful')
         : logInfo('Merge Testcafe Report JSON and Test JSON was Successful');
@@ -139,14 +137,6 @@ function runOnOnRealMobile() {
         return true;
     } else {
         return false;
-    }
-}
-
-function testDirectory() {
-    if (smoke) {
-        return smokeTestDir;
-    } else if (e2e) {
-        return e2eTestDir;
     }
 }
 

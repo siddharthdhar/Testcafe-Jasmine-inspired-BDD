@@ -1,12 +1,12 @@
-import { apiRequestLogger, testLogger, testStep, it, logFailureMessage } from '../../utilities/loggers/testLogger';
+import { apiRequestLogger, testLogger, testStep, it, logFailureMessage } from '../loggers/testLogger';
 import { Selector } from 'testcafe';
-import { getCurrentUrl } from '../../utilities/helper';
+import { getCurrentUrl } from '../utilities/helper';
 
 const httpLogger: RequestLogger = apiRequestLogger();
 
 fixture`AGL Website Smoke Test on "${process.env.device}: ${process.env.browser}"`
     .meta({
-        type: 'smoke',
+        type: 'e2e',
         suite: 'agl',
     })
     .requestHooks(httpLogger);

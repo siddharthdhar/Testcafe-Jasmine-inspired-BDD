@@ -458,7 +458,6 @@ function formatError(error) {
     // Capture Screenshot path and split the relative path to be added to image property in html
     if (error.includes('Screenshot:')) {
         screenshotPath = error.split('Screenshot:')[1].split('<br>')[0];
-        console.log(screenshotPath);
         screenshotPath = screenshotPath.includes(symbols.slashChar)
             ? screenshotPath.split(`reports${symbols.slashChar}`)[1]
             : screenshotPath.split(`reports/`)[1];

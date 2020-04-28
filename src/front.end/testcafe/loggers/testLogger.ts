@@ -2,7 +2,7 @@
 import { t as testController, RequestLogger } from 'testcafe';
 import * as browserLogs from './browserLogger';
 import * as fs from 'fs';
-import { TestcafeTestLog } from '../../models/testcafeLog';
+import { TestcafeTestLog } from '../models/testcafeLog';
 
 export function consoleColor(colorName: 'red' | 'green' | 'yellow' | 'cyan' | 'default') {
     const color = {
