@@ -97,7 +97,7 @@ function pushRequestLoggerToTestLog(httpRequestLogger: RequestLogger) {
  * @param httpRequestLogger Test Cafe HTTP Request Logger
  * @param fn
  * @example
- * testLogger(testControllerToJsonString(t), httpRequestLogger, () => {
+ * testLogger(testControllerToJsonString(t), httpRequestLogger, async () => {
  *      await testCode;
  * })
  */
