@@ -23,12 +23,12 @@ $ yarn install
 
 ## Framework Structure
 
-1. **Config**: `e2e/config/testcafe.js`
+1. **Config**: `src/config/testcafe.js`
 
     * Test cafe does not support a config.js file for its entry into the tests like Protractor. Hence we need to capture all the arguments from commandline beforehand, process them and place them in the right context through this testcafe.js file.
     * Testcafe supports config.json instead and test runners. More details can be found here: [<https://devexpress.github.io/testcafe/documentation/using-testcafe/configuration-file.html]>
 
-2. **Tests**: `e2e/test/smokes`: Organising Your Tests:
+2. **Tests**: `src/front.end/testcafe/test`: Organising Your Tests:
 
     1. Fixtures:
 
@@ -116,14 +116,6 @@ $ yarn install
 
 ```console
 yarn smoke
-```
-
-1. To Run All tests in an environment: [***Chrome*** is selected by ***default*** and only desktop browser specific tests will run]
-
-```console
-yarn smoke Environment_Name
-$ yarn smoke -e Environment_Name
-$ yarn smoke --env Environment_Name
 ```
 
 1. To Run Tests on specific browser:
