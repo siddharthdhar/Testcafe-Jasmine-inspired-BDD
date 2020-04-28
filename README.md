@@ -105,6 +105,10 @@ $ yarn install
             * Detailed View:
 
             ![Detailed Summary](https://i.imgur.com/PzNkfjBh.png)
+            
+          * Custom Spec Report:
+          
+          ![custom spec report](https://i.imgur.com/X8V0u87h.png)
 
 ## RUN TESTS
 
