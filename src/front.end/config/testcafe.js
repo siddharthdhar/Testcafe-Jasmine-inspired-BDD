@@ -6,6 +6,10 @@ const commandLineArgs = require('command-line-args');
 const execCommand = require('../../../scripts/lib/executeCommand');
 const path = require('path');
 const log = require('../testcafe/loggers/testLogger');
+
+const resolveOptions = require('./testcafeHelp');
+const options = resolveOptions();
+
 // const allEnvironments = require('../e2e/environments').Environments.all;
 const processArgs = process.env.npm_config_argv;
 const mobile = require('../testcafe/enums/enums').DeviceType.Mobile;
@@ -17,6 +21,7 @@ const e2e = processArgs.includes('e2e');
 const testDir = 'src/front.end/testcafe/tests';
 const clientScriptDirectory = path.join('src/front.end/testcafe', 'clientScripts');
 process.env.reportBaseDir = reportBaseDir;
+process.env.testLogDirectory = path.join(process.env.reportBaseDir, 'testLogs');
 process.env.testLogPath = path.join(process.env.reportBaseDir, 'testcafeLog.json');
 
 // DEFAULT VALUES:
@@ -30,18 +35,6 @@ let fixtureMetaData = [];
 let nunitReportPath = path.join(reportBaseDir, 'testcafe.xml');
 let jsonReportPath = path.join(reportBaseDir, 'testcafe.json');
 let screenshotPath = path.join(reportBaseDir, 'testCafeScreenshots');
-
-const options = commandLineArgs([
-    { name: 'browser', alias: 'b', type: String },
-    { name: 'env', alias: 'e', type: String },
-    { name: 'spec', alias: 's', type: String },
-    { name: 'suite', alias: 'S', type: String },
-    { name: 'concurrency', alias: 'c', type: Number, defaultValue: 1 },
-    { name: 'screenshot', type: Boolean, defaultValue: false },
-    { name: 'suppressConsoleColors', type: Boolean, defaultValue: false },
-    { name: 'quarantineMode', alias: 'q', type: Boolean, defaultValue: false },
-    { name: 'qrCode', type: Boolean },
-]);
 
 exitCode = runTests();
 
@@ -65,7 +58,7 @@ function runTests() {
     // 2. Create Custom Test Report
     console.log('\n');
     logInfo('Merge Testcafe Report JSON and Test JSON...');
-    const createReport = execCommand('node scripts/testcafe/testcafeMergeLogAndReport.js');
+    const createReport = execCommand('node scripts/testcafe/report/testcafeMergeLogAndReport.js');
     createReport !== 0
         ? logError('Merge Testcafe Report JSON and Test JSON was Unsuccessful')
         : logInfo('Merge Testcafe Report JSON and Test JSON was Successful');
@@ -119,6 +112,11 @@ function resolveBrowser() {
 //         if (!selectedEnv) {
 //             logError(`"${environmentName}" is incorrect. Environments should be one of the below:`);
 //             allEnvironments.forEach((env) => console.log(log.red, env.name));
+//             logInfo(
+//                 `Or refer to options guide by running the command: ${log.consoleColor('red')}yarn smoke:tc --help${log.consoleColor(
+//                  'default'
+//                  )}`
+//              );
 //             process.exit(1);
 //         }
 //     }
