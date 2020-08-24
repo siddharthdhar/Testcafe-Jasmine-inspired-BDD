@@ -4,6 +4,7 @@
   },
   "devDependencies": {
     "command-line-args": "^5.1.1",
+    "command-line-usage": "^6.1.0",
     "prettier": "^2.0.2",
     "rimraf": "^3.0.2",
     "testcafe": "^1.8.3",

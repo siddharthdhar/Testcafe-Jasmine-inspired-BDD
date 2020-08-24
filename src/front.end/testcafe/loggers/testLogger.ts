@@ -1,8 +1,10 @@
 // All Timestamps pushed to log should be in the format (including the pipe | symbol): "YYYY-MM-DDTHH:MM:SS.sssZ |"
 import { t as testController, RequestLogger } from 'testcafe';
 import * as browserLogs from './browserLogger';
-import * as fs from 'fs';
 import { TestcafeTestLog } from '../models/testcafeLog';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as mkdirp from 'mkdirp';
 
 export function consoleColor(colorName: 'red' | 'green' | 'yellow' | 'cyan' | 'default') {
     const color = {
@@ -10,7 +12,7 @@ export function consoleColor(colorName: 'red' | 'green' | 'yellow' | 'cyan' | 'd
         green: '\x1b[32m',
         yellow: '\x1b[33m',
         cyan: '\x1b[36m',
-        default: '\x1b[0m',
+        default: '\x1b[0m'
     };
     return process.env.suppressConsoleColors === 'true' ? '' : color[colorName];
 }
@@ -20,7 +22,7 @@ const testPhases = {
     inFixtureAfterEachHook: 'inFixtureAfterEachHook',
     inTestBeforeHook: 'inTestBeforeHook',
     inFixtureBeforeEachHook: 'inFixtureBeforeEachHook',
-    inTest: 'inTest',
+    inTest: 'inTest'
 };
 
 /**
@@ -57,31 +59,30 @@ export function apiRequestLogger(): RequestLogger {
         logRequestHeaders: true,
         logResponseHeaders: true,
         logResponseBody: true,
-        stringifyResponseBody: true,
+        stringifyResponseBody: true
     });
     return logger;
 }
 
 /**
- * Push the api responses (captured throughout the lifecycle of the test) that did not result in whitelisted status codes to Test Log
+ * Push the api responses (captured throughout the lifecycle of the test) that did not result in status code 200 0r 302 to Test Log
  * @param httpRequestLogger as the testcafe Request Logger
  */
 function pushRequestLoggerToTestLog(httpRequestLogger: RequestLogger) {
-    const whitelistStatusCodes = [200, 204, 302, 304, 301, 307];
     const formatIndent = 2;
     httpRequestLogger.requests
         .filter((element) => element.response)
-        .filter((element) => !whitelistStatusCodes.includes(element.response.statusCode))
+        .filter((element) => ![200, 204, 302, 304, 301, 307].includes(element.response.statusCode))
         .forEach((element) => {
             const request = {
                 method: element.request.method,
                 timestamp: new Date(element.request.timestamp).toISOString(),
-                url: element.request.url,
+                url: element.request.url
             };
             const response = {
                 timestamp: new Date(element.response.timestamp).toISOString(),
                 statusCode: element.response.statusCode,
-                body: element.response.body,
+                body: element.response.body
             };
             const messageWithTimeStamp = `${request.timestamp} |${tabIndent(formatIndent)}${consoleColor(
                 'yellow'
@@ -98,7 +99,7 @@ function pushRequestLoggerToTestLog(httpRequestLogger: RequestLogger) {
  * @param httpRequestLogger Test Cafe HTTP Request Logger
  * @param fn
  * @example
- * testLogger(testControllerToJsonString(t), httpRequestLogger, async () => {
+ * testLogger(testControllerToJsonString(t), httpRequestLogger, () => {
  *      await testCode;
  * })
  */
@@ -111,7 +112,7 @@ export async function testLogger(tc: TestController, httpRequestLogger: RequestL
         inFixtureAfterEachHook: (): string => '::TEST::FIXTURE AFTER EACH HOOK::',
         inTestBeforeHook: (): string => '::TEST::BEFORE HOOK::',
         inFixtureBeforeEachHook: (): string => '::TEST::FIXTURE BEFORE EACH HOOK::',
-        inTest: (): string => '::TEST HOOK::',
+        inTest: (): string => '::TEST HOOK::'
     };
     await pushToTestLog(logMessage(phaseMap[testPhase]()));
     return fn()
@@ -157,7 +158,7 @@ function testControllerToJsonString(tc: TestController): string {
  * // [Step 1:] [ERROR:] Click the next button
  */
 export async function testStep(stepDescription: string, fn?: () => Promise<any>): Promise<any> {
-    incrementTestStepNumber();
+    await incrementTestStepNumber();
     const message = `${tabIndent(1)}[Step ${currentStepNumber()}:] ${stepDescription}`;
     const messageOnError = `${tabIndent(1)}${consoleColor('red')}[Step ${currentStepNumber()}:] [ERROR:] ${stepDescription}${consoleColor(
         'default'
@@ -222,18 +223,20 @@ export function logFailureMessage(failMsg: string): string {
 function prepareLogTopItems(
     testDetails: string
 ): {
+    testId: string;
     quarantineAttempt: string;
     tags: string;
     fixtureName: string;
     testDescription: string;
 } {
     return {
+        testId: JSON.parse(testDetails).testRun.browserManipulationQueue.screenshotCapturer.pathPattern.placeholderToDataMap['${TEST_ID}'],
         quarantineAttempt: JSON.parse(testDetails).testRun.browserManipulationQueue.screenshotCapturer.pathPattern.placeholderToDataMap[
             '${QUARANTINE_ATTEMPT}'
         ],
         tags: JSON.stringify(JSON.parse(testDetails).testRun.test.testFile.currentFixture.meta),
         fixtureName: JSON.parse(testDetails).testRun.test.testFile.currentFixture.name,
-        testDescription: JSON.parse(testDetails).testRun.test.name,
+        testDescription: JSON.parse(testDetails).testRun.test.name
     };
 }
 
@@ -268,20 +271,22 @@ async function flushTestLogToConsole(testdetails: string, httpRequestLogger: Req
     // Step 4: Prepare to release TestLog Object to a log.json file
     const topLogItems = prepareLogTopItems(testdetails);
     const testLogObject: TestcafeTestLog = {
+        testId: topLogItems.testId,
         tags: topLogItems.tags,
         quarantineAttempt: topLogItems.quarantineAttempt,
         fixtureName: topLogItems.fixtureName,
         testName: topLogItems.testDescription,
-        testLog: testController.ctx.logs,
+        testLog: testController.ctx.logs
     };
 
-    flushTestLogToJsonFile(testLogObject);
+    flushTestLogToJsonFile(topLogItems.testId, testLogObject);
 
     // Step 5: Add the Fixture and Test Description to the top of the Array, to identify the test more accurately and easily
-    testController.ctx.logs.splice(0, 0, `\n\n\nLogs For Quarantine ATTEMPT: ${topLogItems.quarantineAttempt}`);
-    testController.ctx.logs.splice(1, 0, `[TAGS]: ${topLogItems.tags}`);
-    testController.ctx.logs.splice(2, 0, `[FIXTURE]: ${topLogItems.fixtureName}`);
-    testController.ctx.logs.splice(3, 0, `[TEST]: ${topLogItems.testDescription}`);
+    testController.ctx.logs.splice(0, 0, `\n\n\nTEST-ID: ${topLogItems.testId}`);
+    testController.ctx.logs.splice(1, 0, `Logs For Quarantine ATTEMPT: ${topLogItems.quarantineAttempt}`);
+    testController.ctx.logs.splice(2, 0, `[TAGS]: ${topLogItems.tags}`);
+    testController.ctx.logs.splice(3, 0, `[FIXTURE]: ${topLogItems.fixtureName}`);
+    testController.ctx.logs.splice(4, 0, `[TEST]: ${topLogItems.testDescription}`);
     testController.ctx.logs.splice(
         testController.ctx.logs.length + 1,
         0,
@@ -333,49 +338,28 @@ const getCircularReplacer = () => {
     };
 };
 
-async function flushTestLogToJsonFile(testLogObject: TestcafeTestLog) {
-    let fileDataObject = {
-        logs: [],
+async function flushTestLogToJsonFile(testId: string, testLogObject: TestcafeTestLog) {
+    const fileDataObject = {
+        logs: []
     };
-    let fileCreated = false;
-    const logFile = process.env.testLogPath;
 
-    const readAndWriteToFile = () => {
-        fs.readFile(logFile, 'utf-8', (readErr, fileData) => {
-            if (readErr) {
-                if (readErr.code === 'ENOENT') {
-                    if (!fileCreated) {
-                        fs.writeFile(logFile, JSON.stringify(fileDataObject), (writeErr) => {
-                            if (writeErr) {
-                                throw writeErr;
-                            }
-                            fileCreated = true;
-                            readAndWriteToFile();
-                        });
-                    } else {
-                        readAndWriteToFile();
-                    }
-                } else {
-                    console.log('other kind of error', readErr);
-                    throw readErr;
-                }
-            } else if (!fileData) {
-                readAndWriteToFile();
-            } else {
-                fileDataObject = JSON.parse(fileData);
-                fileDataObject.logs.push(testLogObject);
-                fs.writeFile(
-                    logFile,
-                    JSON.stringify(fileDataObject, null, 2).replace(/\\t|\\n|\\u001b\[(.*?)m/g, ''),
-                    'utf-8',
-                    (writeErr) => {
-                        if (writeErr) {
-                            throw writeErr;
-                        }
-                    }
-                );
-            }
-        });
-    };
-    readAndWriteToFile();
+    // While writing to file, replace the following special characters: \t, \n, color codes: \u001b\[(.*?)m
+    const regEx = /\\t|\\n|\\u001b\[(.*?)m/g;
+
+    const logFile = path.join(process.env.testLogDirectory, `${testId}.json`);
+
+    await mkdirp(process.env.testLogDirectory);
+
+    new Promise((resolve, reject) => {
+        fileDataObject.logs.push(testLogObject);
+        // Making file writing a sync process to check if findindex issue is fixed
+        try {
+            fs.writeFileSync(logFile, JSON.stringify(fileDataObject, null, 2).replace(regEx, ''), 'utf-8');
+            return resolve();
+        } catch (err) {
+            return reject(err);
+        }
+    })
+        .then(() => console.log(`Log File -> ${logFile} created successfully at the end of test`))
+        .catch((err) => console.log(`ERROR while creating / writing in file ${path.resolve(logFile)}: ${err}`));
 }

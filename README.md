@@ -40,7 +40,7 @@ $ yarn install
         const httpLogger = RequestLogger('https://example.com/');
         fixture(`FEATURE DESCRIPTION`)
         .meta({
-            type: 'smoke',
+            type: 'e2e',
             suite: 'google'
         })
         .requestHooks(httpLogger);
@@ -112,24 +112,30 @@ $ yarn install
 
 ## RUN TESTS
 
+1. Help:
+```console
+yarn e2e -h
+yarn e2e --help
+```
+
 1. To Run All tests: [***Chrome*** is selected by ***default*** and only desktop browser specific tests will run]
 
 ```console
-yarn smoke
+yarn e2e
 ```
 
 1. To Run Tests on specific browser:
 
 ```console
-$ yarn smoke -b "Browser_Name"
-$ yarn smoke -browser "Browser_Name"
-example: yarn smoke -b "firefox"
+$ yarn e2e -b "Browser_Name"
+$ yarn e2e -browser "Browser_Name"
+example: yarn e2e -b "firefox"
 ```
 
 1. To Run Tests headless on chrome: [<https://devexpress.github.io/testcafe/documentation/using-testcafe/common-concepts/browsers/testing-in-headless-mode.html]>
 
 ```console
-yarn smoke -b "chrome:headless"
+yarn e2e -b "chrome:headless"
 ```
 
 1. Find all saucelabs related browser configuration:
@@ -141,55 +147,55 @@ yarn testcafe -b saucelabs
 1. To Run Tests on Saucelabs browser
 
 ```console
-$ yarn smoke -b "saucelabs:browser_os_configuration"
-$ yarn smoke --browser "saucelabs:browser_os_configuration"
-example: yarn smoke -b "saucelabs:Chrome@beta:OS X 10.10"
+$ yarn e2e -b "saucelabs:browser_os_configuration"
+$ yarn e2e --browser "saucelabs:browser_os_configuration"
+example: yarn e2e -b "saucelabs:Chrome@beta:OS X 10.10"
 ```
 
 1. To Run Tests on Saucelabs mobile : This will run tests with ***metadata as "device: Mobile"***
 
 ```console
-$ yarn smoke -b "saucelabs:browser_os_configuration"
-$ yarn smoke --browser "saucelabs:browser_os_configuration"
-example: yarn smoke -b "saucelabs:iPhone 7 Plus Simulator@13.0"
+$ yarn e2e -b "saucelabs:browser_os_configuration"
+$ yarn e2e --browser "saucelabs:browser_os_configuration"
+example: yarn e2e -b "saucelabs:iPhone 7 Plus Simulator@13.0"
 ```
 
 1. To Run Tests on Chrome Emulator : This will run tests with ***metadata as "device: Mobile"***
 
 ```console
-$ yarn smoke -b "chrome:emulation:device=Emulation_Device"
-$ yarn smoke --browser "chrome:emulation:device=Emulation_Device"
-example: yarn smoke -b "chrome:emulation:device=iphone X"
+$ yarn e2e -b "chrome:emulation:device=Emulation_Device"
+$ yarn e2e --browser "chrome:emulation:device=Emulation_Device"
+example: yarn e2e -b "chrome:emulation:device=iphone X"
 ```
 
 1. To Run Tests specific to a feature: This will run tests with ***metadata "suite: YOUR_FEATURE"***
 
 ```console
-$ yarn smoke --suite YOUR_FEATURE
-$ yarn smoke -S YOUR_FEATURE
-example: yarn smoke --suite billSmoothing
+$ yarn e2e --suite YOUR_FEATURE
+$ yarn e2e -S YOUR_FEATURE
+example: yarn e2e --suite billSmoothing
 ```
 
 1. To Run Tests in Parallel:
 
 ```console
-$ yarn smoke --concurrency NUMBER
-$ yarn smoke -c NUMBER
-example: yarn smoke -c 5
+$ yarn e2e --concurrency NUMBER
+$ yarn e2e -c NUMBER
+example: yarn e2e -c 5
 ```
 
 1. To take screenshots on Failure: pass --screenshot as CLI argument
 
 ```console
-yarn smoke --screenshot
+yarn e2e --screenshot
 ```
 
 1. To Run Tests in Quarantine Mode: pass -q or -- as CLI argument
 
 ```console
-$ yarn smoke --quarantineMode
-$ yarn smoke -q
-example: yarn smoke -q
+$ yarn e2e --quarantineMode
+$ yarn e2e -q
+example: yarn e2e -q
 ```
 
 "# testcafe.poc"
