@@ -350,12 +350,12 @@ async function flushTestLogToJsonFile(testId: string, testLogObject: TestcafeTes
 
     await mkdirp(process.env.testLogDirectory);
 
-    new Promise((resolve, reject) => {
+    new Promise<void>((resolve, reject) => {
         fileDataObject.logs.push(testLogObject);
         // Making file writing a sync process to check if findindex issue is fixed
         try {
             fs.writeFileSync(logFile, JSON.stringify(fileDataObject, null, 2).replace(regEx, ''), 'utf-8');
-            return resolve();
+            return  resolve();
         } catch (err) {
             return reject(err);
         }
