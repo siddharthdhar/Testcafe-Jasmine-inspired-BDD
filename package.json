@@ -3,6 +3,7 @@
         "e2e": "rimraf reports/ && node src/front.end/config/testcafe.js"
     },
     "devDependencies": {
+        "@playwright/test": "^1.13.1",
         "command-line-args": "^5.1.1",
         "command-line-usage": "^6.1.0",
         "prettier": "^2.0.2",
