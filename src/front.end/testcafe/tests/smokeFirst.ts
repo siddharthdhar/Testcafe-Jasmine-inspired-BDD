@@ -34,46 +34,39 @@ test
         });
     })('AGL Website Verification', async (test) => {
     await testLogger(test, httpLogger, async () => {
-        const menuItem = Selector('.primary-nav-links__item');
-        const subMenuItem = Selector('primary-nav__tertiary-item');
-        await testStep('On AGL website, hover over First Menu Item', async () => {
-            await test.hover(menuItem.nth(0));
-            await it(`should have first menu name GET CONNECTED`, async () => {
-                await test
-                    .expect(menuItem.nth(0).innerText)
-                    .eql('GET CONNECTED', logFailureMessage('First Menu Name was not GET CONNECTED'));
+        const landingPage = {
+            myAccount: Selector('.primary-nav__button--account'),
+            menuItem: Selector('.primary-nav-links__item'),
+            subMenuItem: Selector('primary-nav__tertiary-item')
+        }
+
+        const myAccountPage = {
+            emailInput: Selector('input'),
+            privacyPolicy: Selector(('.identity-footer__item a')).nth(0)
+        }
+
+        await testStep('On AGL website, click My Account', async () => {
+            await test.click(landingPage.myAccount);
+            await it(`my account page should have Privacy Policy Link`, async () => {
+                await test.expect(myAccountPage.privacyPolicy.exists).ok(logFailureMessage('Privacy not found on page'), {timeout: 30000});
+                await test.expect(myAccountPage.privacyPolicy.innerText).eql('Privacy');
             });
-            await it(`should have first sub menu item name Electricity & Gas Plans`, async () => {
-                await test
-                    .expect(subMenuItem.nth(0).innerText)
-                    .eql('Electricity & Gas Plans', logFailureMessage('First Sub Menu Name was not Electricity & Gas Plans'));
+        });
+        await testStep('On My Account page, click Privacy', async () => {
+            await test.click(myAccountPage.privacyPolicy);
+            await it(`should land on Privacy Policy Page`, async () => {
+                const docURI = await test.eval(() => document.documentURI)
+                await test.expect(docURI).eql('https://www.agl.com.au/privacy-policy');
+            });
+            await test.closeWindow();
+        });
+        await testStep('Input email in the email box', async () => {
+            await test.typeText(myAccountPage.emailInput, 'test@testmail.com');
+            await it(`my account page should have Privacy Policy Link`, async () => {
+                await test.expect(myAccountPage.privacyPolicy.innerText).eql('Privacy');
             });
         });
 
-        await testStep('On AGL website, hover over Second Menu Item', async () => {
-            await test.hover(menuItem.nth(1));
-            await it(`should have second menu name SOLAR AND RENEWABLES`, async () => {
-                await test
-                    .expect(menuItem.nth(1).innerText)
-                    .eql('SOLAR AND RENEWABLES', logFailureMessage('Second Menu Name was not SOLAR AND RENEWABLES'));
-            });
-            await it(`should have first sub menu item name Electricity & Gas Plans`, async () => {
-                await test
-                    .expect(subMenuItem.nth(0).innerText)
-                    .eql('Solar Energy', logFailureMessage('First Sub Menu Name was not Solar and Renewables'));
-            });
-        });
-
-        await testStep('On AGL website, hover over Third Menu Item', async () => {
-            await test.hover(menuItem.nth(2));
-            await it(`should have menu name BUSINESS`, async () => {
-                await test.expect(menuItem.nth(2).innerText).eql('BUSINESS', logFailureMessage('Third Menu Name was not BUSINESS'));
-            });
-            await it(`should have sub menu item name Electricity & Gas Plans`, async () => {
-                await test
-                    .expect(subMenuItem.nth(0).innerText)
-                    .eql('Electricity & Gas Plans', logFailureMessage('First Sub Menu Name was not Electricity & Gas Plans'));
-            });
-        });
     });
+    
 });

@@ -7,7 +7,7 @@
         "command-line-usage": "^6.1.0",
         "prettier": "^2.0.2",
         "rimraf": "^3.0.2",
-        "testcafe": "^1.14.0",
+        "testcafe": "^1.15.1",
         "testcafe-browser-provider-saucelabs": "^1.8.2",
         "testcafe-reporter-json": "^2.2.0",
         "testcafe-reporter-nunit": "^0.1.2",

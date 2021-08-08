@@ -12,12 +12,18 @@ function main() {
     let step = 0;
 
     //Copying CSS for Testcafe Report
-    fs.copyFileSync(testcafeCssSourceLocation, testcafeCssDestinationLocation, (err) => {
-        if (err) {
-            console.log(`CSS copy errored out due to: \n${err}`);
-            throw err;
-        }
-    });
+    try {
+        fs.copyFileSync(testcafeCssSourceLocation, testcafeCssDestinationLocation)
+    } catch (err) {
+        console.log(`CSS copy errored out due to: \n${err}`);
+        throw err;
+    }
+    // fs.copyFileSync(testcafeCssSourceLocation, testcafeCssDestinationLocation, (err) => {
+    //     if (err) {
+    //         console.log(`CSS copy errored out due to: \n${err}`);
+    //         throw err;
+    //     }
+    // });
 
     fs.readFile(reportFile, 'utf-8', (readErr, reportFileData) => {
         if (readErr) {
