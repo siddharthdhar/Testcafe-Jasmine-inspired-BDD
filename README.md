@@ -95,6 +95,33 @@ $ yarn install
 
         ```
 
+        * ***IMPORTANT!!***
+
+        You **HAVE TO** write a "before or beforeEach", "after or afterEach" and attach a "testLogger" to it. Otherwise the report will not work.
+        In case you have no action to perform in before and after test, you can enter a shell testLogger code
+
+        ```typescript
+            test
+            .meta({
+                spec: 'randomTest'
+            })
+            .before(async (t) => {
+                await testLogger(t, httpLogger, async() => { });
+            })
+            .after(async () => {
+                await testLogger(t, httpLogger, async() => { });
+            })('Scenario Description', async (t) => {
+            await testLogger(t, httpLogger, async() =>{
+                await testStep('Click on some link and verify something', async () => {
+                    await t.click('.SomeLink');
+                    it('should show header', async() => {
+                        await t.expect(Selector('.header').innerText).eql('Some Header');
+                    });
+                });
+            });
+        );
+        ```
+
     1. REPORTS: The framework outputs Spec, JSON and HTML Reports in the reports folder once tests are run.
          * HTML Report: contains the Logs, Test Results and Screenshots. This is a custom reporter which is different from HTML reporter recommended by Test Cafe.
          * Custom HTML report:
@@ -105,14 +132,15 @@ $ yarn install
             * Detailed View:
 
             ![Detailed Summary](https://i.imgur.com/PzNkfjBh.png)
-            
-          * Custom Spec Report:
-          
+
+           * Custom Spec Report:
+
           ![custom spec report](https://i.imgur.com/X8V0u87h.png)
 
 ## RUN TESTS
 
 1. Help:
+
 ```console
 yarn e2e -h
 yarn e2e --help
