@@ -1,4 +1,4 @@
-import { apiRequestLogger, testLogger, testStep, it, logFailureMessage } from '../loggers/testLogger';
+import { apiRequestLogger, testLogger, testStep, it } from '../loggers/testLogger';
 import { Selector } from 'testcafe';
 import { getCurrentUrl } from '../utilities/helper';
 
@@ -48,7 +48,7 @@ test
         await testStep('On AGL website, click My Account', async () => {
             await test.click(landingPage.myAccount);
             await it(`my account page should have Privacy Policy Link`, async () => {
-                await test.expect(myAccountPage.privacyPolicy.exists).ok(logFailureMessage('Privacy not found on page'), {timeout: 30000});
+                await test.expect(myAccountPage.privacyPolicy.exists).ok({timeout: 30000});
                 await test.expect(myAccountPage.privacyPolicy.innerText).eql('Privacy');
             });
         });
